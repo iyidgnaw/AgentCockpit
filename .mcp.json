@@ -1,10 +1,18 @@
 {
   "mcpServers": {
-    "agent-terminal": {
+    "agent-backend": {
       "type": "stdio",
       "command": "uv",
       "args": ["run", "python", "-m", "agent_terminal_mcp.server"],
-      "cwd": "${HOME}/.agent-terminal-mcp"
+      "cwd": "${HOME}/.agent-terminal-mcp",
+      "_comment": "Switch to agent-tmux-mcp by changing command/args/cwd below and commenting this out"
+    },
+    "_agent-backend-tmux": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "-m", "agent_tmux_mcp.server"],
+      "cwd": "${HOME}/.agent-tmux-mcp",
+      "_comment": "Rename key to agent-backend (remove leading _) to activate tmux backend"
     }
   }
 }

@@ -8,9 +8,33 @@ AgentCockpit lets Claude Code act as an **orchestrator** — spawning agents in 
 
 ## Prerequisites
 
-1. macOS with iTerm2
-2. iTerm2 Python API enabled: **iTerm2 → Preferences → General → Magic → Enable Python API**
-3. `agent-terminal-mcp` installed and configured in Claude Code's MCP settings
+1. A terminal backend (see [Backend Configuration](#backend-configuration))
+2. The corresponding MCP server installed (`agent-terminal-mcp` or `agent-tmux-mcp`)
+
+## Backend Configuration
+
+AgentCockpit talks to terminal sessions through an MCP backend. Both backends expose the same tool names (`list_sessions`, `send_text`, etc.), so skills work unchanged — only `.mcp.json` needs to be updated.
+
+| | iTerm2 (`agent-terminal-mcp`) | tmux (`agent-tmux-mcp`) |
+|---|---|---|
+| Requires | iTerm2 + Python API enabled | tmux in PATH |
+| Sessions | Windows/tabs/panes | tmux panes |
+| Best for | macOS desktop | SSH / headless / Linux |
+| Install location | `~/.agent-terminal-mcp` | `~/.agent-tmux-mcp` |
+
+**Default:** iTerm2 (`agent-backend` key in `.mcp.json` points to `agent-terminal-mcp`).
+
+### Switch to tmux
+
+1. In `.mcp.json`, rename `agent-backend` → `_agent-backend-iterm` and `_agent-backend-tmux` → `agent-backend`
+2. Install `agent-tmux-mcp` at `~/.agent-tmux-mcp`
+3. Run `/reload-plugins` in Claude Code
+
+### Switch back to iTerm2
+
+Reverse the key rename: `_agent-backend-iterm` → `agent-backend` and `agent-backend` → `_agent-backend-tmux`, then `/reload-plugins`.
+
+See `CLAUDE.md` for a quick reference.
 
 ## Install
 
