@@ -6,17 +6,18 @@ description: First-time setup wizard for AgentCockpit. Checks environment, insta
 
 Run this once before using other AgentCockpit skills.
 
-If `~/.agent-cockpit/preferences.json` already exists, show its current contents and ask whether to reconfigure.
+If `~/.agent-cockpit/preferences.json` already exists, show its current contents and ask whether to reconfigure (use AskUserQuestion with Yes/No options).
 
 ---
 
 ## Step 1: Choose backend
 
-Ask the user:
-
-> Which terminal backend do you want to use?
-> - **iTerm2** (`agent-terminal-mcp`) — macOS desktop
-> - **tmux** (`agent-tmux-mcp`) — SSH, headless servers, Linux
+Use **AskUserQuestion** tool with:
+- question: "Which terminal backend do you want to use?"
+- header: "Backend"
+- options:
+  - `iTerm2` — agent-terminal-mcp, macOS desktop, requires iTerm2 with Python API enabled
+  - `tmux` — agent-tmux-mcp, works over SSH, headless servers, and Linux
 
 ---
 
@@ -24,18 +25,16 @@ Ask the user:
 
 ### If user chose iTerm2
 
-Run these checks:
-
+Run:
 ```bash
-# Check 1: running inside iTerm2
-echo $TERM_PROGRAM   # must be "iTerm.app"
-
-# Check 2: Python API is enabled
-echo $ITERM2_COOKIE  # must be non-empty
+echo $TERM_PROGRAM
+echo $ITERM2_COOKIE
 ```
 
 **If `TERM_PROGRAM` is not `iTerm.app`:**
-> ❌ You're not running inside iTerm2. Please open this terminal session in iTerm2 and re-run `/agent-cockpit:bootstrap`.
+> ❌ You're not running inside iTerm2. Open this terminal session in iTerm2 and re-run `/agent-cockpit:bootstrap`.
+
+Stop here.
 
 **If `ITERM2_COOKIE` is empty:**
 > ❌ iTerm2 Python API is not enabled. Enable it:
@@ -44,36 +43,30 @@ echo $ITERM2_COOKIE  # must be non-empty
 > 3. Set dropdown to **"Allow all apps to connect"**
 > 4. Restart iTerm2, then re-run `/agent-cockpit:bootstrap`.
 
-If both checks pass → continue to Step 3.
+Stop here.
+
+If both pass → continue to Step 3.
 
 ---
 
 ### If user chose tmux
 
-Run these checks:
-
+Run:
 ```bash
-# Check 1: tmux is installed
 which tmux
-
-# Check 2: running inside a tmux session
-echo $TMUX   # must be non-empty
 ```
 
 **If `tmux` is not found:**
-> ❌ tmux is not installed. Install it:
+> ❌ tmux is not installed.
 > - macOS: `brew install tmux`
 > - Ubuntu/Debian: `sudo apt install tmux`
 > Then re-run `/agent-cockpit:bootstrap`.
 
-**If `TMUX` is empty:**
-> ❌ You're not inside a tmux session. Start one first:
-> ```bash
-> tmux new -s main
-> ```
-> Then re-run `/agent-cockpit:bootstrap` inside that session.
+Stop here.
 
-If both checks pass → continue to Step 3.
+Note: The orchestrator (Claude Code) does NOT need to be inside a tmux session. The MCP server manages tmux sessions on behalf of the orchestrator. Checking `$TMUX` is NOT required.
+
+If tmux is in PATH → continue to Step 3.
 
 ---
 
@@ -81,17 +74,23 @@ If both checks pass → continue to Step 3.
 
 ### iTerm2 backend
 
+Check if `~/.agent-terminal-mcp` exists. If not:
 ```bash
 git clone https://github.com/iyidgnaw/agent-terminal-mcp ~/.agent-terminal-mcp
+```
+Then always run:
+```bash
 cd ~/.agent-terminal-mcp && uv sync
 ```
 
-If `~/.agent-terminal-mcp` already exists, skip clone and just run `uv sync` (or `git pull && uv sync`).
-
 ### tmux backend
 
+Check if `~/.agent-tmux-mcp` exists. If not:
 ```bash
 git clone https://github.com/iyidgnaw/agent-tmux-mcp ~/.agent-tmux-mcp
+```
+Then always run:
+```bash
 cd ~/.agent-tmux-mcp && uv sync
 ```
 
@@ -99,16 +98,14 @@ cd ~/.agent-tmux-mcp && uv sync
 
 ## Step 4: Update .mcp.json
 
-Update the `.mcp.json` in the AgentCockpit plugin cache to activate the chosen backend. The file is at:
-`~/.claude/plugins/cache/AgentCockpit/agent-cockpit/<version>/.mcp.json`
-
-Find the current version with:
+Find current plugin version:
 ```bash
 ls ~/.claude/plugins/cache/AgentCockpit/agent-cockpit/
 ```
 
-**For iTerm2:** ensure `agent-backend` key points to agent-terminal-mcp and tmux key is prefixed with `_`:
+**Read** the `.mcp.json` file first, then **Write** it with the updated content.
 
+**For iTerm2 — write this exactly:**
 ```json
 {
   "mcpServers": {
@@ -128,8 +125,7 @@ ls ~/.claude/plugins/cache/AgentCockpit/agent-cockpit/
 }
 ```
 
-**For tmux:** swap — `agent-backend` points to agent-tmux-mcp, iterm key is prefixed with `_`:
-
+**For tmux — write this exactly:**
 ```json
 {
   "mcpServers": {
@@ -149,39 +145,32 @@ ls ~/.claude/plugins/cache/AgentCockpit/agent-cockpit/
 }
 ```
 
-Write the file directly using the Write tool.
+---
+
+## Step 5: Choose allowed runtimes
+
+Use **AskUserQuestion** tool with `multiSelect: true`:
+- question: "Which agent runtimes can be spawned automatically (no confirmation needed)? Select all that apply."
+- header: "Runtimes"
+- options (max 4):
+  - `cursor-agent` — launch command: `agent`
+  - `codex` — launch command: `codex`
+  - `claude-code` — launch command: `claude`
+  - `gemini-cli` — launch command: `gemini`
+
+Note: `openclaw` is supported but not listed due to UI limit. If the user mentions it, add it to `allowed_runtimes` manually.
 
 ---
 
-## Step 5: Save preferences
+## Step 6: Save preferences
 
-Write to `~/.agent-cockpit/preferences.json` (create `~/.agent-cockpit/` if needed):
-
+Write to `~/.agent-cockpit/preferences.json`:
 ```json
 {
   "backend": "<iterm2 or tmux>",
   "allowed_runtimes": ["<chosen>", ...]
 }
 ```
-
----
-
-## Step 6: Ask about agent runtimes
-
-Ask the user which runtimes to allow for automatic spawning:
-
-> Which agent runtimes do you want to enable? (select all that apply)
-> - `cursor-agent` — launch command: `agent`
-> - `codex` — launch command: `codex`
-> - `openclaw` — launch command: `openclaw`
-> - `claude-code` — launch command: `claude`
-> - `gemini-cli` — launch command: `gemini`
-
-Any runtime NOT in this list will require explicit user confirmation before spawning.
-
-Update `preferences.json` with `allowed_runtimes`.
-
-Optionally ask about role preferences (see `schemas/preferences.md`).
 
 ---
 
@@ -192,10 +181,10 @@ Tell the user:
 > ✅ Setup complete.
 >
 > - Backend: `<chosen>` — MCP installed at `~/.agent-<chosen>-mcp`
-> - `.mcp.json` updated
+> - `.mcp.json` updated (active backend: `agent-backend`)
 > - Preferences saved to `~/.agent-cockpit/preferences.json`
 >
-> **Run `/reload-plugins` to activate.**
+> **Run `/reload-plugins` to activate the new backend.**
 >
 > Next steps:
 > - `/agent-cockpit:inspect` — discover agents in your workspace
