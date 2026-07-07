@@ -12,7 +12,7 @@ AgentCockpit lets Claude Code act as an **orchestrator** — discovering agents 
 2. `agent-terminal-mcp` installed at `~/.agent-terminal-mcp`:
 
 ```bash
-git clone https://github.com/diywang/agent-terminal-mcp ~/.agent-terminal-mcp
+git clone https://github.com/iyidgnaw/agent-terminal-mcp ~/.agent-terminal-mcp
 cd ~/.agent-terminal-mcp
 uv sync
 ```
@@ -22,7 +22,7 @@ uv sync
 ## Install
 
 ```bash
-/plugin marketplace add https://github.com/diywang/AgentCockpit
+/plugin marketplace add https://github.com/iyidgnaw/AgentCockpit
 /plugin install agent-cockpit@AgentCockpit
 /reload-plugins
 ```
