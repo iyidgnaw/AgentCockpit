@@ -10,7 +10,22 @@ Invoke as: `/agent-cockpit:supervisor <task description>`
 
 ### 1. Discover available agents
 
-Call `discover_agents` with `workspace` set to the current working directory, then call `list_agents`. If fewer than 1 agent has `availability: available`, report this and stop.
+Call `discover_agents` with `workspace` set to the current working directory, then call `list_agents`.
+
+If fewer than 1 agent has `availability: available`, **auto-provision before stopping**:
+
+1. Read `~/.agent-cockpit/preferences.json` (if not already read in Step 2)
+2. Determine which runtimes to spawn:
+   - If `agent_roles` is defined → spawn each runtime listed in `agent_roles`
+   - Else if `allowed_runtimes` is defined → spawn one instance of each allowed runtime
+   - Else → spawn one `claude-code` agent
+3. For each runtime to spawn:
+   - If the runtime is in `allowed_runtimes` (or no preferences file exists) → call `spawn_agent` with that runtime and the current workspace, no confirmation needed
+   - If the runtime is **not** in `allowed_runtimes` → warn the user and ask for confirmation before spawning
+4. After all spawns, wait up to 30s for agents to initialize: poll `list_agents` every 5s until at least one agent reaches `availability: available`
+5. If no agents are available after 30s, report the spawn failure and stop
+
+Once at least 1 agent is available, continue to Step 2.
 
 ### 2. Decompose the task
 

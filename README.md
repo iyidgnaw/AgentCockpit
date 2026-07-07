@@ -34,32 +34,34 @@ To switch backends later, run `/agent-cockpit:bootstrap` again.
 
 ## Usage
 
-**See what agents are running:**
-```
-/agent-cockpit:inspect
-```
+**Supervisor is the main entry point.** Describe your task and it handles everything — spawning agents if needed, decomposing the work, delegating, monitoring, and reporting results.
 
-**Spawn a new agent to work on a task:**
-```
-/agent-cockpit:spawn
-Spawn a Claude Code agent to implement the auth module
-```
-
-**Delegate a complex task across multiple agents:**
 ```
 /agent-cockpit:supervisor
 Refactor the API layer: split into router, controller, and service layers, add tests
 ```
 
-**Debug a hard problem with all agents in parallel:**
-```
-/agent-cockpit:debug-swarm
-The payment webhook fails intermittently — figure out why
+Supervisor reads `~/.agent-cockpit/preferences.json` to know which agents to use and what each one is responsible for. If the required agents aren't running, it spawns them automatically before delegating work.
+
+```json
+{
+  "allowed_runtimes": ["codex", "cursor-agent"],
+  "agent_roles": {
+    "codex": "write implementation code",
+    "cursor-agent": "code review and QA"
+  }
+}
 ```
 
-**Hand off from one agent to another:**
+With this config, supervisor will spin up both agents if needed, then route coding tasks to codex and review tasks to cursor-agent — no manual setup required.
+
+The other skills are available for manual use when you need finer control:
+
 ```
-/agent-cockpit:handoff
+/agent-cockpit:inspect          # see what agents are running
+/agent-cockpit:spawn            # manually spawn an agent
+/agent-cockpit:handoff          # hand off a task to a specific agent
+/agent-cockpit:debug-swarm      # send the same debug task to all agents in parallel
 ```
 
 ## Skills
@@ -67,8 +69,8 @@ The payment webhook fails intermittently — figure out why
 | Skill | Description |
 |---|---|
 | `/agent-cockpit:bootstrap` | Set up your terminal backend, install MCP server, configure `.mcp.json` |
+| `/agent-cockpit:supervisor` | **Main entry point.** Decompose a task, auto-provision agents if needed, delegate, monitor, and summarize |
 | `/agent-cockpit:inspect` | Discover and show status of all agents in the current workspace |
-| `/agent-cockpit:spawn` | Spawn one or more new agent sessions in the current workspace |
+| `/agent-cockpit:spawn` | Manually spawn one or more new agent sessions |
 | `/agent-cockpit:handoff` | Hand off work from the orchestrator to a specific agent |
-| `/agent-cockpit:supervisor` | Decompose a task, delegate to available agents, monitor until done, verify results |
 | `/agent-cockpit:debug-swarm` | Send the same debug task to all available agents in parallel, synthesize consensus |
