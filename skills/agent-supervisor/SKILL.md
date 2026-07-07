@@ -39,7 +39,17 @@ Use `/loop` to continuously poll until all agents finish. In each loop iteration
 - If `availability` returns to `available` and `screen_hash` is stable → agent finished
 - If `availability: blocked` → note it, continue monitoring others
 
-Loop interval: every 30 seconds. Stop loop when all agents are `available` or after 10 minutes total.
+**Choose interval and timeout based on task complexity — do not use fixed values:**
+
+| Task size | Example | Poll interval | Timeout |
+|---|---|---|---|
+| Trivial | single file edit, config change | 15–30s | 5 min |
+| Small | one focused feature, a few files | 30–60s | 15 min |
+| Medium | multi-file feature, new module | 60–120s | 30 min |
+| Large | new repo, full subsystem | 2–5 min | 60–90 min |
+| Very large | multi-repo, parallel heavy builds | 5–10 min | 2–3 hours |
+
+Use judgment — if agents are actively producing output (screen_hash changes each check), lean toward longer intervals. If the task is mostly waiting (CI, build, install), poll less frequently. After timeout, report current status rather than silently giving up.
 
 ### 5. Collect results
 
