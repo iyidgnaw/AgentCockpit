@@ -1,0 +1,15 @@
+{
+  "name": "AgentCockpit",
+  "owner": {
+    "name": "Diyi Wang",
+    "url": "https://github.com/iyidgnaw"
+  },
+  "plugins": [
+    {
+      "name": "agent-cockpit",
+      "source": "./",
+      "description": "Orchestrate multiple coding agents across iTerm2 terminal sessions",
+      "version": "0.1.0"
+    }
+  ]
+}
