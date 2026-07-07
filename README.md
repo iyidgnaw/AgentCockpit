@@ -4,40 +4,49 @@ A Claude Code plugin for orchestrating multiple coding agents across terminal se
 
 ## What it does
 
-AgentCockpit lets Claude Code act as an **orchestrator** — discovering agents running in other terminal panes (Codex, another Claude Code, Cursor Agent, etc.), inspecting their state, and delegating tasks to them via structured handoff packets.
+AgentCockpit lets Claude Code act as an **orchestrator** — spawning agents in new terminal panes, discovering what's already running, and delegating tasks to them autonomously via structured handoff packets.
 
 ## Prerequisites
 
 1. macOS with iTerm2
-2. `agent-terminal-mcp` installed at `~/.agent-terminal-mcp`:
-
-```bash
-git clone https://github.com/iyidgnaw/agent-terminal-mcp ~/.agent-terminal-mcp
-cd ~/.agent-terminal-mcp
-uv sync
-```
-
-3. iTerm2 Python API enabled: **Preferences → General → Magic → Enable Python API**
+2. iTerm2 Python API enabled: **iTerm2 → Preferences → General → Magic → Enable Python API**
+3. `agent-terminal-mcp` installed and configured in Claude Code's MCP settings
 
 ## Install
 
+Clone the repo, then add a permanent alias so every `claude` session loads the plugin:
+
 ```bash
-/plugin marketplace add https://github.com/iyidgnaw/AgentCockpit
-/plugin install agent-cockpit@AgentCockpit
-/reload-plugins
+git clone https://github.com/iyidgnaw/AgentCockpit ~/codebase/AgentCockpit
+
+echo 'alias claude="claude --plugin-dir ~/codebase/AgentCockpit"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Or load it for a single session:
+
+```bash
+claude --plugin-dir ~/codebase/AgentCockpit
 ```
 
 ## Skills
 
 | Skill | Description |
 |---|---|
-| `/agent-cockpit:inspect` | Show status of all running agents |
-| `/agent-cockpit:handoff` | Hand off work from one agent to another |
-| `/agent-cockpit:supervisor` | Orchestrate a complex task across multiple agents |
-| `/agent-cockpit:debug-swarm` | Send same debug task to all available agents in parallel |
+| `/agent-cockpit:inspect` | Discover and show status of all agents in the current workspace |
+| `/agent-cockpit:spawn` | Spawn one or more new agent sessions in the current workspace |
+| `/agent-cockpit:handoff` | Hand off work from the orchestrator to a specific agent |
+| `/agent-cockpit:supervisor` | Decompose a task, delegate to available agents, monitor until done, verify results |
+| `/agent-cockpit:debug-swarm` | Send the same debug task to all available agents in parallel, synthesize consensus |
 
 ## How it works
 
-Agents running in terminal panes are **workers**. Claude Code is the **orchestrator**. The `agent-terminal-mcp` server gives Claude Code the ability to read any pane, detect what agent is running there, and send it instructions.
+**Workers** are agents running in iTerm2 panes. **Orchestrator** is Claude Code with this plugin.
 
-Delegation is fully autonomous — no confirmation prompts during execution. Align with the orchestrator upfront on what to do; it handles the rest.
+1. `/agent-cockpit:inspect` — scans all panes in your current workspace, sends a "who are you" handshake to idle sessions, builds a registry of known agents
+2. `/agent-cockpit:spawn` — creates new iTerm2 tabs and launches agents (`agent` for Cursor Agent, `claude` for Claude Code, `codex` for Codex)
+3. `/agent-cockpit:supervisor` — decomposes your task, delegates sub-tasks autonomously, monitors every ~10s, collects and verifies results
+
+Workers need zero setup — they just need to be running in an iTerm2 pane in the same working directory as the orchestrator.
+
+Delegation is fully autonomous — no confirmation prompts. Align with the orchestrator upfront; it handles the rest.

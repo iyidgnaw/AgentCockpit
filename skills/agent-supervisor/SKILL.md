@@ -10,7 +10,7 @@ Invoke as: `/agent-cockpit:supervisor <task description>`
 
 ### 1. Discover available agents
 
-Call `list_agents`. If fewer than 1 agent has `availability: available`, report this and stop.
+Call `discover_agents` with `workspace` set to the current working directory, then call `list_agents`. If fewer than 1 agent has `availability: available`, report this and stop.
 
 ### 2. Decompose the task
 
