@@ -14,19 +14,12 @@ AgentCockpit lets Claude Code act as an **orchestrator** — spawning agents in 
 
 ## Install
 
-Clone the repo, then add a permanent alias so every `claude` session loads the plugin:
+From within Claude Code:
 
-```bash
-git clone https://github.com/iyidgnaw/AgentCockpit ~/codebase/AgentCockpit
-
-echo 'alias claude="claude --plugin-dir ~/codebase/AgentCockpit"' >> ~/.zshrc
-source ~/.zshrc
 ```
-
-Or load it for a single session:
-
-```bash
-claude --plugin-dir ~/codebase/AgentCockpit
+/plugin marketplace add https://github.com/iyidgnaw/AgentCockpit
+/plugin install agent-cockpit@AgentCockpit
+/reload-plugins
 ```
 
 ## Skills
