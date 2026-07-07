@@ -14,26 +14,32 @@ Call `discover_agents` with `workspace` set to the current working directory, th
 
 ### 2. Decompose the task
 
+Read `~/.agent-cockpit/preferences.json` if it exists. If `agent_roles` is defined, use it to guide assignment (e.g. if `"codex": "code review"`, prefer codex for review sub-tasks).
+
 Break `$ARGUMENTS` into sub-tasks. Assign each to an agent based on:
+- **Respect `agent_roles` from preferences** — match task type to agent specialty
 - Prefer `availability: available` agents
 - Prefer agents in the same repo/branch as the work when relevant
-- Prefer `claude-code` for complex reasoning tasks; `codex` for test/verification tasks
+- If no preferences file, use judgment: `claude-code` for complex reasoning, `codex` for test/review tasks
 
 ### 3. Delegate all sub-tasks
 
 For each assignment:
 1. Call `create_handoff_packet` with the sub-task objective and appropriate `requested_action`
 2. Call `delegate_to_agent` with `submit: true`
+3. **Immediately call `send_enter` on the same session_id** — `submit: true` pastes the text but some agent runtimes (e.g. Cursor Agent) require a second Enter to actually submit. Always send it.
 
 Do not pause between delegations. All assignments go out autonomously.
 
-### 4. Monitor progress
+### 4. Monitor progress (use /loop)
 
-Poll each assigned agent via `inspect_agent` approximately every 10 seconds. Watch for:
-- `availability` returning to `available` → agent finished
-- `availability: blocked` → note it, continue monitoring others
+Use `/loop` to continuously poll until all agents finish. In each loop iteration:
+- Call `inspect_agent` on each assigned session
+- If `state` is `running` or `unknown` with a changed `screen_hash` → still working, continue
+- If `availability` returns to `available` and `screen_hash` is stable → agent finished
+- If `availability: blocked` → note it, continue monitoring others
 
-Give up after 5 minutes and report current status.
+Loop interval: every 30 seconds. Stop loop when all agents are `available` or after 10 minutes total.
 
 ### 5. Collect results
 
