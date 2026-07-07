@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "agent-terminal": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "-m", "agent_terminal_mcp.server"],
+      "cwd": "${HOME}/.agent-terminal-mcp"
+    }
+  }
+}

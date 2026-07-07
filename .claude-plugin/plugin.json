@@ -1,0 +1,9 @@
+{
+  "name": "agent-cockpit",
+  "description": "Orchestrate multiple coding agents across terminal sessions. Requires agent-terminal-mcp installed at ~/.agent-terminal-mcp.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Diyi Wang"
+  },
+  "homepage": "https://github.com/diywang/AgentCockpit"
+}
