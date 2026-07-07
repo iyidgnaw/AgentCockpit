@@ -9,7 +9,7 @@
       "name": "agent-cockpit",
       "source": "./",
       "description": "Orchestrate multiple coding agents across iTerm2 terminal sessions",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }
