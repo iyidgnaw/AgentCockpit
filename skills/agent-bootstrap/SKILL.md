@@ -137,8 +137,8 @@ ls ~/.claude/plugins/cache/AgentCockpit/agent-cockpit/
     },
     "agent-backend": {
       "type": "stdio",
-      "command": "uv",
-      "args": ["run", "python", "-m", "agent_tmux_mcp.server"],
+      "command": "${HOME}/.agent-tmux-mcp/.venv/bin/python",
+      "args": ["-m", "agent_tmux_mcp.server"],
       "cwd": "${HOME}/.agent-tmux-mcp"
     }
   }
